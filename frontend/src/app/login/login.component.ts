@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-login',
@@ -9,13 +10,15 @@ import { Router } from '@angular/router';
 export class LoginComponent implements OnInit {
 
   public username = '';
-  constructor(private router: Router) { }
+  constructor(private router: Router, private userService: UserService) { }
 
   ngOnInit() {
   }
 
   login() {
-    this.router.navigate(['/chat', this.username]);
+    this.userService.loginUser(this.username).subscribe((data: any) => {
+      this.router.navigate(['/chat', data.userId]);
+    })
   }
 
 }
