@@ -11,14 +11,13 @@
         <div class="messages-box">
           <div class="list-group rounded-0" *ngFor="let user of users">
             <a (click)="onUserSelect(user)"
-              class="list-group-item list-group-item-action rounded-0" style="cursor: pointer;">
-              <div class="media"><img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg"
+              class="list-group-item list-group-item-action rounded-0" [class.active]="user===selectedUser" style="cursor: pointer;">
+              <div class="media align-items-center"><img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg"
                   alt="user" width="50" class="rounded-circle">
                 <div class="media-body ml-4">
-                  <div class="d-flex align-items-center justify-content-between mb-1">
-                    <h6 class="mb-0">{{user.username}}</h6><small class="small font-weight-bold">25 Dec</small>
+                  <div class="d-flex align-items-center justify-content-between ">
+                    <h6 class="mb-0">{{user.username}}</h6>
                   </div>
-                  <p class="font-italic mb-0 text-small">Lorem ipsum dolor sit amet</p>
                 </div>
               </div>
             </a>
@@ -28,15 +27,16 @@
     </div>
     <!-- Chat Box-->
     <div class="col-7 px-0" *ngIf="selectedUser !== null">
-      <div class="bg-gray px-4 py-2 bg-light">
-        <p class="h5 mb-0 py-1">{{selectedUser.username}}</p>
-      </div>
-
+      
       <div class="px-4 py-5 chat-box bg-white">
-
+        <!-- <h3 class="bg-gray bg-light">{{selectedUser.username}}</h3> -->
+        <!-- <div class="bg-gray px-4 py-2 bg-light">
+          <p class="h5 mb-0 py-1">{{selectedUser.username}}</p>
+        </div> -->
+        
         <div *ngFor="let msg of messageHistory">
           <!-- Sender Message-->
-          <div class="media w-50 mb-3" *ngIf="msg.from !== userId">
+          <div class="media w-50 mb-3" *ngIf="msg.from !== userId && msg.from === selectedUser.userId">
             <img
               src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50"
               class="rounded-circle">
@@ -44,17 +44,15 @@
               <div class="bg-light rounded py-2 px-3 mb-2">
                 <p class="text-small mb-0 text-muted">{{msg.message}}</p>
               </div>
-              <p class="small text-muted">{{msg.date | date: 'HH:mm aa | LLL L'}}</p>
             </div>
           </div>
 
           <!-- Reciever Message-->
-          <div class="media w-50 ml-auto mb-3" *ngIf="msg.from === userId">
+          <div class="media w-50 ml-auto mb-3" *ngIf="msg.from === userId && msg.to === selectedUser.userId">
             <div class="media-body">
               <div class="bg-primary rounded py-2 px-3 mb-2">
                 <p class="text-small mb-0 text-white">{{msg.message}}</p>
               </div>
-              <p class="small text-muted">{{msg.date | date: 'HH:mm aa | LLL L'}}</p>
             </div>
           </div>
         </div>

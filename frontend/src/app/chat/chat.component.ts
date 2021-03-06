@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ChatService } from '../services/chat.service';
 import { UserService } from '../services/user.service';
 import * as Stomp from 'stompjs';
 import * as SockJS from 'sockjs-client';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat',
@@ -10,27 +10,28 @@ import * as SockJS from 'sockjs-client';
   styleUrls: ['./chat.component.scss'],
 })
 export class ChatComponent implements OnInit {
-  public userId;
+  public userId: number;
   public selectedUser = null;
-  public message = ''
-  public messageHistory = [
-    { from: 1, to: 2, message: 'Hi dude, wassup', date: new Date()},
-    { from: 2, to: 1, message: 'Nothing much dude', date: new Date()},
-  ];
+  public message: string = ''
+  public messageHistory = [];
 
   public users = [];
 
-  webSocketEndPoint = 'http://localhost:8080/ws';
-  topic = '/topic/chat';
-  stompClient: any;
+  public webSocketEndPoint = 'http://localhost:8080/chat';
+  public topic: string;
+  public stompClient: Stomp.Client;
 
-  constructor(private userService: UserService, private chatService: ChatService) {}
+  constructor(private userService: UserService, private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
+    this.userId = +this.route.snapshot.params.userId;
+    this.topic = '/topic/' + this.userId;
     this.connect();
-    this.userId = 1;
     this.userService.getUsers().subscribe((users: any[]) => {
-      this.users = users;
+      this.users = users.filter(user => user.userId !== this.userId);
+      if (users.length === 0) {
+        this.router.navigate(['/']);
+      }
     })
   }
 
@@ -40,27 +41,37 @@ export class ChatComponent implements OnInit {
     this.stompClient.connect(
       {},
       (frame) => {
-        this.stompClient.subscribe(this.topic, (event) => {
-          console.log(event);
+        this.stompClient.subscribe( this.topic, (event) => {
+          this.onMessageReceived(event.body)
         });
       },
-      () => {}
+      this.onError
     );
   }
 
+  onError(error) {
+    // Do something on error
+  }
+
+  onMessageReceived(payload) {
+    this.messageHistory.push(JSON.parse(payload))
+  }
 
   onUserSelect(user: any) {
-    // Assign clicked user to selected user
     this.selectedUser = user;
-    // Establish a web socket connection with the selected user
   }
 
   sendMessage() {
     // Send message to the socket connection
-    console.log(this.message)
-    this.chatService.sendMessage(this.message).subscribe();
+    const payload ={
+      message: this.message,
+      from: +this.userId,
+      to: +this.selectedUser.userId
+    }
+    this.stompClient.send('/app/message', {},  JSON.stringify(payload))
     // push message to the current messages
-
+    this.messageHistory.push(payload);
     // clear message
+    this.message = '';
   }
 }
