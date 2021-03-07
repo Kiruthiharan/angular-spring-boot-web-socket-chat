@@ -41,6 +41,7 @@ export class ChatComponent implements OnInit {
     this.stompClient.connect(
       {},
       (frame) => {
+        // After connection subscribe to the topic
         this.stompClient.subscribe( this.topic, (event) => {
           this.onMessageReceived(event.body)
         });
@@ -62,12 +63,13 @@ export class ChatComponent implements OnInit {
   }
 
   sendMessage() {
-    // Send message to the socket connection
+    // Construct the payload
     const payload ={
       message: this.message,
       from: +this.userId,
       to: +this.selectedUser.userId
     }
+    // Send the message to the web socket
     this.stompClient.send('/app/message', {},  JSON.stringify(payload))
     // push message to the current messages
     this.messageHistory.push(payload);
